@@ -18,9 +18,6 @@ on:
       token:
         required: true
         description: "org specific token"
-      repository_name:
-        required: true
-        description: "repository name"
       ci_username:
         required: true
         description: "CI username"
