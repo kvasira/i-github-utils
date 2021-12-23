@@ -46,7 +46,7 @@ jobs:
   build:
     # this should stop this running on forks: github.repository_owner == 'orgname'
     # also only run this if it is a merge to main
-    if: github.repository_owner == '${{ inputs.org }}' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }} 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
