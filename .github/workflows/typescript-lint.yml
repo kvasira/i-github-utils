@@ -1,0 +1,27 @@
+# this workflow should be used for every pipeline that wants to lint typescript files
+# assumes you have husky script set up correctly
+# This pipeline only checks whether you have met the required linting rules. It should not
+# fix the code. That has to be a conscious decision.
+
+# Lint this repo
+name: lint typescript
+
+# this workflow is expected to the used via 'uses' tag and not run manually
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+          
+      - name: Lint
+        run: |
+          npm install
+          npm run compile
+          npm run lint
