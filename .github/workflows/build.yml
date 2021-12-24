@@ -83,9 +83,22 @@ jobs:
       - id: put_release_version_in_env
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
-      - uses: ./coordinator/.github/actions/create_docker_image_tag
+      - id: create_image_tag
+        uses: ./actions/create_image_tag
+        with:
+          package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+
       - uses: ./coordinator/.github/actions/create_docker_image
-      - uses: ./coordinator/.github/actions/create_helm_chart
+      - uses: ./actions/create_helm_chart
+        with:
+          org: "${{ inputs.org }}"
+          coordinator: "${{ inputs.coordinator }}"
+          image_tag: ${{ steps.create_image_tag.outputs.specific_version }}
+          repo_name: "${{ github.event.repository.name }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
+          ci_user_email: "${{ secrets.ci_user_email }}"
+          ci_user_name: "${GITHUB_ACTOR}"
+
       - uses: ./coordinator/.github/actions/git_tag_release_version
       - uses: ./coordinator/.github/actions/update_next_version
       - uses: ./coordinator/.github/actions/prepare_release_content

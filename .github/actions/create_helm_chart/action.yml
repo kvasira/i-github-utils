@@ -1,0 +1,63 @@
+name: Create Helm chart
+description: "Create a Helm chart and publish to the repository"
+
+inputs:
+  org:
+    required: true
+    type: string
+    description: "the name of the private org"
+  coordinator:
+    required: true
+    type: string
+    description: "the name of the repo that has helper actions in it"
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+  repo_name:
+    required: true
+    description: "Name of the repo that the helm chart is for"
+  ci_access_token:
+    required: true
+    description: "CI access token"
+  ci_user_name:
+    required: true
+    description: "user name to be associated with this commit"
+  ci_user_email:
+    required: true
+    description: "CI user email"
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+        helm dependency up chart
+        rm -f chart/Chart.lock
+
+        sudo snap install yq --channel=v3/stable
+        yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
+        yq w -i chart/Chart.yaml appVersion ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml imageTag ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml image.tag ${{ inputs.image_tag }}
+        helm package chart
+
+        git config user.name "${{ inputs.ci_user_name }}"
+        git config user.email "${{ inputs.ci_user_email }}"
+        git add chart
+        git commit -m "[SKIP CI] Create Helm chart for ${{ inputs.repo_name }} for ${{ inputs.image_tag }}"
+
+        CHARTNAME="$(yq r chart/Chart.yaml name)"
+        echo ${CHARTNAME}
+        cp ${CHARTNAME}*.tgz ./coordinator/charts
+        cd ./coordinator
+
+        git config user.name "${{ inputs.ci_user_name }}"
+        git config user.email "${{ inputs.ci_user_email }}"
+
+        git pull origin main
+        git status
+        helm repo index charts/
+        git add charts
+        git commit -m "[SKIP CI] Update charts registry for ${CHARTNAME} to ${{ inputs.image_tag }}"
+        git push origin main
+
+      shell: bash

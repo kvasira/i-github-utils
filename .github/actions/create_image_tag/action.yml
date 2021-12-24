@@ -1,0 +1,31 @@
+name: Create image tag
+description: "Create an image tag. This will be different for main or branches"
+
+inputs:
+  package_version:
+    required: true
+    description: "version number for main branch"
+
+outputs:
+  specific_version:
+    description: 'Current release version'
+    value: ${{ steps.compute_tag.outputs.specific_version }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: compute_tag
+      run: |
+        image_tag=""
+        if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+          image_tag="${{ inputs.package_version }}"
+        else
+          # make this a pre-release tag
+          image_tag="${{ inputs.package_version }}-$(echo -n $GITHUB_REF | sed 's|refs/heads/||' | sed 's|refs/tags/||' | sed 's|/|-|g')"
+        fi
+        echo "::set-output name=specific_version::$image_tag"
+      shell: bash
+      # this exists to support create_docker_image step until it is updated to take an input
+    - run: |
+        echo "IMAGE_TAG=${{ steps.compute_tag.outputs.specific_version }}" >> $GITHUB_ENV
+      shell: bash
