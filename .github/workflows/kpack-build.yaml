@@ -1,0 +1,114 @@
+# Build this package- no docker container is required
+# this should be broken up more logically
+name: Kpack Build
+# concurrency is specified as we can see race conditions with some of the
+# actions that require updates to helm charts and package.json if multiple repos
+# are trying to build at the same time
+concurrency: build_coordinator
+
+# this workflow is expected to the used via 'uses' tag and not run manually
+on:
+  workflow_call:
+    inputs:
+      org:
+        required: true
+        type: string
+        description: "the name of the private org to ensure we don't run on forks"
+      coordinator:
+        required: true
+        type: string
+        description: "the name of the repo that has helper actions in it"
+    secrets:
+      token:
+        required: true
+        description: "org specific token"
+      ci_username:
+        required: true
+        description: "CI username"
+      ci_user_email:
+        required: true
+        description: "CI user email"
+      ci_github_token:
+        required: true
+        description: "CI github token"
+      ci_access_token:
+        required: true
+        description: "CI access token"
+      docker_registry:
+        required: true
+        description: "docker registry"
+      docker_username:
+        required: true
+        description: "docker username"
+      docker_password:
+        required: true
+        description: "docker password"
+      
+
+jobs:
+
+  build:
+    # this should stop this running on forks: github.repository_owner == 'orgname'
+    # also only run this if it is a merge to main
+
+    if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }} 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+
+      - name: Checkout external actions from ${{ inputs.coordinator }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.org }}/${{ inputs.coordinator }}
+          ref: main
+          token: "${{ secrets.token }}"
+          path: coordinator
+
+      - name: Prepare environment
+        uses: ./coordinator/.github/actions/prepare_environment
+        with:
+          repository_name: "${{ github.event.repository.name }}"
+          ci_username: "${{ secrets.ci_username }}"
+          ci_user_email: "${{ secrets.ci_user_email }}"
+          ci_github_token: "${{ secrets.ci_github_token }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
+          docker_registry: "${{ secrets.docker_registry }}"
+          docker_username: "${{ secrets.docker_username }}"
+          docker_password: "${{ secrets.docker_password }}"
+          
+      - id: put_release_version_in_env
+        uses: ./coordinator/.github/actions/put_release_version_in_env
+
+      - id: create_image_tag
+        uses: kvasira/i_github_utils/.github/actions/create_image_tag@main
+        with:
+          package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+
+      - uses: kvasira/i_github_utils/.github/actions/create_helm_chart@main
+        with:
+          org: "${{ inputs.org }}"
+          coordinator: "${{ inputs.coordinator }}"
+          image_tag: ${{ steps.create_image_tag.outputs.specific_version }}
+          repo_name: "${{ github.event.repository.name }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
+          ci_user_email: "${{ secrets.ci_user_email }}"
+          ci_user_name: "${GITHUB_ACTOR}"
+
+      - uses: ./coordinator/.github/actions/git_tag_release_version
+      - uses: ./coordinator/.github/actions/update_next_version
+      - uses: ./coordinator/.github/actions/prepare_release_content
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ci_github_token }}
+        with:
+          tag_name: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+          release_name: Release ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+          body_path: ./changes.md
+          draft: false
+          prerelease: false
