@@ -1,6 +1,6 @@
-# Build this package and create the docker containers etc
+# Build this package- no docker container is required
 # this should be broken up more logically
-name: Build
+name: External component
 # concurrency is specified as we can see race conditions with some of the
 # actions that require updates to helm charts and package.json if multiple repos
 # are trying to build at the same time
@@ -48,7 +48,7 @@ on:
 jobs:
 
   build:
-    # this should stop this running on forks: github.repository_owner == 'orgname'
+    # github.repository_owner == 'orgname' should stop this running on forks.
     # also only run this if it is a merge to main
 
     if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
@@ -88,7 +88,6 @@ jobs:
         with:
           package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
 
-      - uses: ./coordinator/.github/actions/create_docker_image
       - uses: kvasira/i_github_utils/.github/actions/create_helm_chart@main
         with:
           org: "${{ inputs.org }}"
