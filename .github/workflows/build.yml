@@ -84,12 +84,12 @@ jobs:
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
       - id: create_image_tag
-        uses: kvasira/i_github_utils/.github/actions/create_image_tag@main
+        uses: kvasira/i-github-utils/.github/actions/create_image_tag@main
         with:
           package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
 
       - uses: ./coordinator/.github/actions/create_docker_image
-      - uses: kvasira/i_github_utils/.github/actions/create_helm_chart@main
+      - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
         with:
           org: "${{ inputs.org }}"
           coordinator: "${{ inputs.coordinator }}"
