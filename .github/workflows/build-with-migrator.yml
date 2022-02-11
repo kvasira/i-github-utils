@@ -1,6 +1,6 @@
 # Build this package and create the docker containers etc
 # this should be broken up more logically
-name: Build
+name: Build with db migrator
 # concurrency is specified as we can see race conditions with some of the
 # actions that require updates to helm charts and package.json if multiple repos
 # are trying to build at the same time
