@@ -89,7 +89,7 @@ jobs:
           package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
 
       - uses: ./coordinator/.github/actions/create_docker_image
-      - uses: ./coordinator/.github/actions/create_docker_db_migrator 
+      - uses: ./coordinator/.github/actions/create_docker_db_migrator
       - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
         with:
           org: "${{ inputs.org }}"
