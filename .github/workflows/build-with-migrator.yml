@@ -111,6 +111,5 @@ jobs:
         with:
           tag_name: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
           release_name: Release ${{ steps.put_release_version_in_env.outputs.app_release_version }}
-          body_path: ./changes.md
           draft: false
           prerelease: false
