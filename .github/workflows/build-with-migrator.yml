@@ -102,7 +102,6 @@ jobs:
 
       - uses: ./coordinator/.github/actions/git_tag_release_version
       - uses: ./coordinator/.github/actions/update_next_version
-      - uses: ./coordinator/.github/actions/prepare_release_content
 
       - name: Create release
         uses: actions/create-release@v1
