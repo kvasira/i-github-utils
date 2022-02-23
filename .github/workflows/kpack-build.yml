@@ -43,7 +43,7 @@ on:
       docker_password:
         required: true
         description: "docker password"
-      
+
 
 jobs:
 
@@ -51,7 +51,7 @@ jobs:
     # this should stop this running on forks: github.repository_owner == 'orgname'
     # also only run this if it is a merge to main
 
-    if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }} 
+    if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -79,7 +79,7 @@ jobs:
           docker_registry: "${{ secrets.docker_registry }}"
           docker_username: "${{ secrets.docker_username }}"
           docker_password: "${{ secrets.docker_password }}"
-          
+
       - id: put_release_version_in_env
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
@@ -100,7 +100,6 @@ jobs:
 
       - uses: ./coordinator/.github/actions/git_tag_release_version
       - uses: ./coordinator/.github/actions/update_next_version
-      - uses: ./coordinator/.github/actions/prepare_release_content
 
       - name: Create release
         uses: actions/create-release@v1
@@ -109,6 +108,5 @@ jobs:
         with:
           tag_name: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
           release_name: Release ${{ steps.put_release_version_in_env.outputs.app_release_version }}
-          body_path: ./changes.md
           draft: false
           prerelease: false

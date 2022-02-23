@@ -101,7 +101,6 @@ jobs:
 
       - uses: ./coordinator/.github/actions/git_tag_release_version
       - uses: ./coordinator/.github/actions/update_next_version
-      - uses: ./coordinator/.github/actions/prepare_release_content
 
       - name: Create release
         uses: actions/create-release@v1
@@ -110,6 +109,5 @@ jobs:
         with:
           tag_name: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
           release_name: Release ${{ steps.put_release_version_in_env.outputs.app_release_version }}
-          body_path: ./changes.md
           draft: false
           prerelease: false
