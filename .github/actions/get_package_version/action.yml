@@ -1,0 +1,14 @@
+name: Read version from package.json
+description: "Read package.json version without modifying it in any way"
+outputs:
+  package_version:
+    description: "Current version read from package.json"
+    value: ${{ steps.get_package_version.outputs.package_version }}
+runs:
+  using: "composite"
+  steps:
+    - id: get_package_version
+      run: |
+        package_version=$(cat < package.json | jq -r .version)
+        echo "::set-output name=package_version::$package_version"
+      shell: bash
