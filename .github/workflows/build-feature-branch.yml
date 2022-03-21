@@ -79,7 +79,7 @@ jobs:
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
       - id: get_package_version
-        uses: ./coordinator/.github/actions/get_package_version
+        uses: kvasira/i-github-utils/.github/actions/get_package_version@main
 
       - id: create_image_tag
         uses: kvasira/i-github-utils/.github/actions/create_image_tag@main
