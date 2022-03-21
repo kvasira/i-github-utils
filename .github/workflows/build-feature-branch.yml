@@ -88,7 +88,7 @@ jobs:
         with:
           org: "${{ inputs.org }}"
           coordinator: "${{ inputs.coordinator }}"
-          image_tag: ${{ steps.create_image_tag.outputs.specific_version }}
+          image_tag: ${{  steps.create_image_tag.outputs.specific_version }}
           repo_name: "${{ github.event.repository.name }}"
           ci_access_token: "${{ secrets.ci_access_token }}"
           ci_user_email: "${{ secrets.ci_user_email }}"
@@ -102,7 +102,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ci_github_token }}
         with:
-          tag_name: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
-          release_name: Release ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+          tag_name: ${{  steps.create_image_tag.outputs.specific_version }}
+          release_name: Release ${{  steps.create_image_tag.outputs.specific_version }}
           draft: false
           prerelease: false
