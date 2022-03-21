@@ -78,10 +78,13 @@ jobs:
       - id: put_release_version_in_env
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
+      - id: get_package_version
+        uses: ./coordinator/.github/actions/get_package_version
+
       - id: create_image_tag
         uses: kvasira/i-github-utils/.github/actions/create_image_tag@main
         with:
-          package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
+          package_version: ${{ steps.get_package_version.outputs.package_version }}
 
       - uses: ./coordinator/.github/actions/create_docker_image
       - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
