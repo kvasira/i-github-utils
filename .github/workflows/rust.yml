@@ -5,6 +5,7 @@ on:
 
 jobs:
   check:
+    # runs `cargo check` against the repo
     name: Check
     runs-on: ubuntu-latest
     steps:
@@ -22,6 +23,7 @@ jobs:
           command: check
 
   test:
+    # runs any tests via `cargo test`
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +41,7 @@ jobs:
           command: test
 
   fmt:
+    # only checks formatting using `cargo fmt` -- won't fix it
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
@@ -58,6 +61,7 @@ jobs:
           args: --all -- --check
 
   clippy:
+    # uses `cargo clippy` to catch common mistakes etc
     name: Clippy
     runs-on: ubuntu-latest
     steps:
