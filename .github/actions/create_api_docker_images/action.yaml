@@ -13,13 +13,17 @@ inputs:
   image_tag:
     required: true
     description: "Image tag to use for this chart"
+  registry:
+    required: true
+    type: string
+    description: "container registry name"
 
 runs:
   using: "composite"
   steps:
     - run: |
         export DOCKER_BUILDKIT=1
-        image_base="$DOCKER_REGISTRY/$(echo -n $GITHUB_REPOSITORY | sed 's|kvasira|REPLACE-ME|')"
+        image_base="$DOCKER_REGISTRY/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{inputs.registry}}|')"
 
         echo -n ${{inputs.docker_password }} | docker login -u ${{inputs.docker_username}} ${{inputs.docker_registry}} --password-stdin
 

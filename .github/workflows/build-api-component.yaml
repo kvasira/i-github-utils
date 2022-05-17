@@ -16,6 +16,10 @@ on:
         required: true
         type: string
         description: "name of repo with helper actions in it"
+      registry:
+        required: true
+        type: string
+        description: "name of our private Docker registry"
     secrets:
       token:
         required: true
@@ -83,7 +87,9 @@ jobs:
         with:
           package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
 
-      - uses: kvasira/i-github-utils/.github/actions/create_api_docker_images
+      - uses: kvasira/i-github-utils/.github/actions/create_api_docker_images@main
+        with:
+          registry: REPLACE-ME
 
       - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
         with:
