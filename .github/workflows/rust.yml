@@ -1,0 +1,81 @@
+name: CI - Rust
+
+on:
+  workflow_call:
+
+jobs:
+  check:
+    # runs `cargo check` against the repo
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git config --global url."https://${{ secrets.CI_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com
+        shell: bash
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  test:
+    # runs any tests via `cargo test`
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git config --global url."https://${{ secrets.CI_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com
+        shell: bash
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  fmt:
+    # only checks formatting using `cargo fmt` -- won't fix it
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git config --global url."https://${{ secrets.CI_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com
+        shell: bash
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    # uses `cargo clippy` to catch common mistakes etc
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git config --global url."https://${{ secrets.CI_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com
+        shell: bash
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings

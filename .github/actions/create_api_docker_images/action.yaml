@@ -1,0 +1,41 @@
+name: Create API component Docker images
+description: "Create API component Docker images from current branch"
+
+inputs:
+  org:
+    required: true
+    type: string
+    description: "the name of the private org"
+  coordinator:
+    required: true
+    type: string
+    description: "the name of the repo that has helper actions in it"
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+  registry:
+    required: true
+    type: string
+    description: "container registry name"
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        export DOCKER_BUILDKIT=1
+        image_base="$DOCKER_REGISTRY/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{inputs.registry}}|')"
+
+        echo -n ${{inputs.docker_password }} | docker login -u ${{inputs.docker_username}} ${{inputs.docker_registry}} --password-stdin
+
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target builder .
+
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target backend -t ${image_base}-be:$image_tag .
+        docker push ${image_base}-be:$image_tag
+
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target frontend -t ${image_base}-fe:$image_tag .
+        docker push ${image_base}-fe:$image_tag
+
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig -t ${image_base}-fe-migrator:$image_tag frontend/migrator
+        docker push ${image_base}-fe-migrator:$image_tag
+
+      shell: bash
