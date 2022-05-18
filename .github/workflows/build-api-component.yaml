@@ -16,14 +16,10 @@ on:
         required: true
         type: string
         description: "name of repo with helper actions in it"
-      registry:
-        required: true
-        type: string
-        description: "name of our private Docker registry"
     secrets:
       token:
         required: true
-        description: "org specific token"
+        description: "org CI token"
       ci_username:
         required: true
         description: "CI username"
@@ -46,7 +42,6 @@ on:
         required: true
         description: "docker password"
 
-
 jobs:
 
   build:
@@ -54,6 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        name: Checkout source repository
+
       - name: Setup node 16
         uses: actions/setup-node@v2
         with:
@@ -79,19 +76,23 @@ jobs:
           docker_username: "${{ secrets.docker_username }}"
           docker_password: "${{ secrets.docker_password }}"
 
-      - id: put_release_version_in_env
+      - name: Extract release version into environment
+        id: put_release_version_in_env
         uses: ./coordinator/.github/actions/put_release_version_in_env
 
-      - id: create_image_tag
+      - name: Create the Docker image tag from environment release version
+        id: create_image_tag
         uses: kvasira/i-github-utils/.github/actions/create_image_tag@main
         with:
           package_version: ${{ steps.put_release_version_in_env.outputs.app_release_version }}
 
-      - uses: kvasira/i-github-utils/.github/actions/create_api_docker_images@main
+      - name: Build the Docker images for an API component
+        uses: kvasira/i-github-utils/.github/actions/create_api_docker_images@main
         with:
-          registry: REPLACE-ME
+          registry: "${{ inputs.registry }}"
 
-      - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
+      - name: Create the Helm charts
+        uses: kvasira/i-github-utils/.github/actions/create_api_helm_charts@main
         with:
           org: "${{ inputs.org }}"
           coordinator: "${{ inputs.coordinator }}"
@@ -101,8 +102,11 @@ jobs:
           ci_user_email: "${{ secrets.ci_user_email }}"
           ci_user_name: "${GITHUB_ACTOR}"
 
-      - uses: ./coordinator/.github/actions/git_tag_release_version
-      - uses: ./coordinator/.github/actions/update_next_version
+      - name: Tag the release version
+        uses: ./coordinator/.github/actions/git_tag_release_version
+
+      - name: Update the package.json to the next version
+        uses: ./coordinator/.github/actions/update_next_version
 
       - name: Create release
         uses: actions/create-release@v1
