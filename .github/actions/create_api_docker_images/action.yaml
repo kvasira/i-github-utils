@@ -29,19 +29,19 @@ runs:
   steps:
     - run: |
         export DOCKER_BUILDKIT=1
-        image_base="${{ inputs.docker_registry }}/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{inputs.registry}}|')"
+        image_base="${{ inputs.docker_registry }}/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{ inputs.registry }}|')"
 
         echo -n ${{ inputs.docker_password }} | docker login -u ${{ inputs.docker_username }} ${{ inputs.docker_registry }} --password-stdin
 
         docker build --secret id=gitconfig,src=$HOME/.gitconfig --target builder .
 
-        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target backend -t ${image_base}-be:$image_tag .
-        docker push ${image_base}-be:$image_tag
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target backend -t ${image_base}-be:${{ inputs.image_tag }} .
+        docker push ${image_base}-be:${{ inputs.image_tag }}
 
-        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target frontend -t ${image_base}-fe:$image_tag .
-        docker push ${image_base}-fe:$image_tag
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig --target frontend -t ${image_base}-fe:${{ inputs.image_tag }} .
+        docker push ${image_base}-fe:${{ inputs.image_tag }}
 
-        docker build --secret id=gitconfig,src=$HOME/.gitconfig -t ${image_base}-fe-migrator:$image_tag frontend/migrator
-        docker push ${image_base}-fe-migrator:$image_tag
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig -t ${image_base}-fe-migrator:${{ inputs.image_tag }} frontend/migrator
+        docker push ${image_base}-fe-migrator:${{ inputs.image_tag }}
 
       shell: bash
