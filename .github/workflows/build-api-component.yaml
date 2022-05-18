@@ -89,7 +89,7 @@ jobs:
 
       - uses: kvasira/i-github-utils/.github/actions/create_api_docker_images@main
         with:
-          registry: REPLACE-ME
+          registry: "${{ inputs.registry }}"
 
       - uses: kvasira/i-github-utils/.github/actions/create_helm_chart@main
         with:
