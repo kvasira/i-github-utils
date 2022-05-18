@@ -22,8 +22,6 @@ inputs:
   ci_user_email:
     required: true
     description: "CI user email"
-
-secrets:
   ci_access_token:
     required: true
     description: "CI access token"
@@ -33,7 +31,7 @@ runs:
   steps:
     - run: |
         sudo snap install yq --channel=v3/stable
-        helm repo add ikva https://${{secrets.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
 
         git config user.name "${{ inputs.ci_user_name }}"
         git config user.email "${{ inputs.ci_user_email }}"
