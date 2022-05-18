@@ -13,10 +13,12 @@ inputs:
   image_tag:
     required: true
     description: "Image tag to use for this chart"
-
-secrets:
+  registry:
+    required: true
+    description: "Docker registry org name"
   docker_registry:
     required: true
+    description: "Docker registry DNS"
   docker_username:
     required: true
   docker_password:
@@ -27,9 +29,9 @@ runs:
   steps:
     - run: |
         export DOCKER_BUILDKIT=1
-        image_base="${{ secrets.docker_registry }}/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{inputs.registry}}|')"
+        image_base="${{ inputs.docker_registry }}/$(echo -n $GITHUB_REPOSITORY | sed 's|$GITHUB_REPOSITORY_OWNER|${{inputs.registry}}|')"
 
-        echo -n ${{ secrets.docker_password }} | docker login -u ${{ secrets.docker_username }} ${{ secrets.docker_registry }} --password-stdin
+        echo -n ${{ inputs.docker_password }} | docker login -u ${{ inputs.docker_username }} ${{ inputs.docker_registry }} --password-stdin
 
         docker build --secret id=gitconfig,src=$HOME/.gitconfig --target builder .
 
