@@ -37,4 +37,3 @@ jobs:
         with:
           name: html-report-${{ matrix.python-version }}
           path: htmlcov
-        
