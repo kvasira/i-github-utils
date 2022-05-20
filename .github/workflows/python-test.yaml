@@ -2,7 +2,7 @@
 # assumes you are using pdm and have Makefile set
 
 # test this repo
-name: test typescript
+name: test python
 
 # this workflow is expected to the used via 'uses' tag and not run manually
 on:
