@@ -1,0 +1,39 @@
+# this workflow should be used for every pipeline that wants to test python files
+# assumes you are using pdm and have Makefile set
+
+# test this repo
+name: test python
+
+# this workflow is expected to the used via 'uses' tag and not run manually
+on:
+  workflow_call:
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pdm
+
+      - name: Test
+        run: |
+          make sync
+          make test
+      
+      - name: Upload HTML test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-report-${{ matrix.python-version }}
+          path: htmlcov
