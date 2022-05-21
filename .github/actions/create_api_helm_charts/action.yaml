@@ -33,9 +33,6 @@ runs:
         sudo snap install yq --channel=v3/stable
         helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
 
-        git config user.name "${{ inputs.ci_user_name }}"
-        git config user.email "${{ inputs.ci_user_email }}"
-
         cd frontend
         helm dependency up chart
         rm -f chart/Chart.lock
@@ -47,7 +44,6 @@ runs:
         git add chart
 
         CHARTNAME="$(yq r chart/Chart.yaml name)"
-        echo ${CHARTNAME}
         cp ${CHARTNAME}*.tgz ../coordinator/charts
 
         cd ../backend
@@ -61,17 +57,20 @@ runs:
         git add chart
 
         CHARTNAME="$(yq r chart/Chart.yaml name)"
-        echo ${CHARTNAME}
         cp ${CHARTNAME}*.tgz ../coordinator/charts
 
-        git commit -m "[SKIP CI] Create Helm chart for ${{ inputs.repo_name }} version ${{ inputs.image_tag }}"
+        git commit -m "[SKIP CI] Create Helm charts for ${{ inputs.repo_name }} version ${{ inputs.image_tag }}"
 
         cd ../coordinator
+
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "<>"
+
         git pull origin main
         git status
         helm repo index charts/
         git add charts
-        git commit -m "[SKIP CI] Update charts registry for ${{ inputs.repo_name }} to ${{ inputs.image_tag }}"
+        git commit -m "[SKIP CI] Update charts registry adding ${{ inputs.repo_name }}:${{ inputs.image_tag }}"
         git push origin main
 
       shell: bash
