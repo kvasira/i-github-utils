@@ -33,5 +33,4 @@ jobs:
         id: lintscore
         run: |
           make sync
-          pdm run pylint --help
           make lint
