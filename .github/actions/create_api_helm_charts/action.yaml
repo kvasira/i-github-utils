@@ -59,9 +59,22 @@ runs:
         CHARTNAME="$(yq r chart/Chart.yaml name)"
         cp ${CHARTNAME}*.tgz ../coordinator/charts
 
+        cd ..
+        helm dependency up chart
+        rm -f chart/Chart.lock
+        yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
+        yq w -i chart/Chart.yaml appVersion ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml imageTag ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml image.tag ${{ inputs.image_tag }}
+        helm package chart
+        git add chart
+
+        CHARTNAME="$(yq r chart/Chart.yaml name)"
+        cp ${CHARTNAME}*.tgz ./coordinator/charts
+
         git commit -m "[SKIP CI] Create Helm charts for ${{ inputs.repo_name }} version ${{ inputs.image_tag }}"
 
-        cd ../coordinator
+        cd ./coordinator
 
         git config user.name "$GITHUB_ACTOR"
         git config user.email "<>"
