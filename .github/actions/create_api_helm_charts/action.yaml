@@ -78,12 +78,13 @@ runs:
         # generate and push main chart
 
         cd ..
-        helm dependency up chart
         rm -f chart/Chart.lock
         yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
         yq w -i chart/Chart.yaml appVersion ${{ inputs.image_tag }}
         yq w -i chart/values.yaml imageTag ${{ inputs.image_tag }}
         yq w -i chart/values.yaml image.tag ${{ inputs.image_tag }}
+        yq w -i chart/Chart.yaml dependencies[].version ${{ inputs.image_tag }}
+        helm dependency up chart
         helm package chart
         git add chart
 
