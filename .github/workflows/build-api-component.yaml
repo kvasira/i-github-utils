@@ -140,9 +140,6 @@ jobs:
           docker_username: "${{ secrets.docker_username }}"
           docker_password: "${{ secrets.docker_password }}"
       
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      
       - name: Create the Helm charts
         uses: kvasira/i-github-utils/.github/actions/create_api_helm_charts@main
         with:
