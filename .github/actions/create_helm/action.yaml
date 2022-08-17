@@ -53,7 +53,7 @@ runs:
         cp ${CHARTNAME}*.tgz ${{inputs.coordinator_path}}/charts
         
         # move back to the starting place
-        back
+        cd -
       
       shell: bash
         
