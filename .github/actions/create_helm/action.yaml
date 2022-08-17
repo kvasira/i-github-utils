@@ -1,0 +1,56 @@
+name: create a single helm file
+description: expected to be used in conjunction with the action to checkout and add to chart repo
+
+inputs:
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+
+  helm_path:
+    required: true
+    description: "folder to find charts to build from,  usually this is '.'"
+
+  coordinator_path:
+    required: true
+    description: "path to coordinator checkout"
+    
+  org:
+    required: true
+    type: string
+    description: "the name of the private git org"
+    
+  coordinator:
+    required: true
+    type: string
+    description: "the name of the repo that has charts"
+  
+  ci_access_token:
+    required: true
+    description: "CI access token"
+    
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        sudo snap install yq --channel=v3/stable
+        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+        
+        
+        cd ${{ helm_path }}
+        helm dependency up chart
+        rm -f chart/Chart.lock
+        yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
+        yq w -i chart/Chart.yaml appVersion ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml imageTag ${{ inputs.image_tag }}
+        yq w -i chart/values.yaml image.tag ${{ inputs.image_tag }}
+        helm package chart
+        git add chart
+        
+        # move tgz to coordinator to be committed later
+        
+        CHARTNAME="$(yq r chart/Chart.yaml name)"
+        cp ${CHARTNAME}*.tgz ${{coordinator_path}}/charts
+        
+        # move back to the starting place
+        back
+        
