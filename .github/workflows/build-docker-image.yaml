@@ -1,0 +1,86 @@
+# just build the docker images and push them to a repo
+
+name: build docker image
+
+# there should be no concurrency issues with this command
+
+
+# this workflow is expected to the used via 'uses' tag and not run manually
+on:
+  workflow_call:
+    inputs:
+      debug_enabled:
+        description: "if enabled will drop into a tmate session to allow interactive debug on failure"
+        required: false
+        default: false
+        
+      docker_context:
+        required: true
+        description: "path to docker file '.' if root"
+      docker_target:
+        required: true
+        description: "target within the dockerfile to run"
+      docker_image_name:
+        required: true
+        description: "usually the repo name"
+      docker_image_tag:
+        required: true
+        description: "image tag to use"
+    
+    secrets:
+      ci_username:
+        required: true
+        description: "CI username"
+      ci_user_email:
+        required: true
+        description: "CI user email"
+      ci_access_token:
+        required: true
+        description: "CI access token"
+      docker_registry:
+        required: true
+        description: "docker registry"
+      docker_username:
+        required: true
+        description: "docker username"
+      docker_password:
+        required: true
+        description: "docker password"
+
+jobs:
+  docker:
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: setup gitconfig
+        run: |
+          git config user.name "${{ secrets.ci_username }}"
+          git config user.email "${{ secrets.ci_user_email }}"
+          git config --global url."https://${{ secrets.ci_access_token }}@github.com/".insteadOf ssh://git@github.com
+      
+      - uses: docker/setup-buildx-action@v2
+        name: Set up Docker Buildx
+        
+      - uses: docker/login-action@v2
+        name: Login to Docker Registry
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+         
+      - name: Build and push docker image
+        run: |
+          image_base="${{ secrets.docker_registry }}/kvasir-docker-registry/${{ inputs.docker_image_name }}"
+          echo "image_base=$image_base"
+          export DOCKER_BUILDKIT=1
+          
+          docker build --secret id=gitconfig,src=$HOME/.gitconfig --target ${{ inputs.docker_target }} -t ${image_base}:${{ inputs.docker_image_tag }} ${{ inputs.docker_context }}
+          docker push ${image_base}:${{ inputs.docker_image_tag }}
+          echo "created docker image ${image_base}:${{ inputs.docker_image_tag }}"
+ 
+      - name: Debug pipeline failure
+        if: ${{ failure() && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
