@@ -36,7 +36,7 @@ runs:
         helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
         
         
-        cd ${{ helm_path }}
+        cd ${{ inputs.helm_path }}
         helm dependency up chart
         rm -f chart/Chart.lock
         yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
@@ -49,8 +49,10 @@ runs:
         # move tgz to coordinator to be committed later
         
         CHARTNAME="$(yq r chart/Chart.yaml name)"
-        cp ${CHARTNAME}*.tgz ${{coordinator_path}}/charts
+        cp ${CHARTNAME}*.tgz ${{inputs.coordinator_path}}/charts
         
         # move back to the starting place
         back
+      
+      shell: bash
         
