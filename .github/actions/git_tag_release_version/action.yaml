@@ -1,0 +1,17 @@
+name: Git tag with release version
+description: "Git tag the current commit with version"
+
+
+inputs:
+  release_version:
+    required: true
+    type: string
+    description: "release version to tag"
+    
+runs:
+  using: "composite"
+  steps:
+    - id: git_tag_release_version
+      run: |
+        git tag "${{ inputs.release_version }}"
+      shell: bash
