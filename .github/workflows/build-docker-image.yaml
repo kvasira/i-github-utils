@@ -11,20 +11,25 @@ on:
     inputs:
       debug_enabled:
         description: "if enabled will drop into a tmate session to allow interactive debug on failure"
+        type: boolean
         required: false
         default: false
         
       docker_context:
         required: true
+        type: string
         description: "path to docker file '.' if root"
       docker_target:
         required: true
+        type: string
         description: "target within the dockerfile to run"
       docker_image_name:
         required: true
+        type: string
         description: "usually the repo name"
       docker_image_tag:
         required: true
+        type: string
         description: "image tag to use"
     
     secrets:
