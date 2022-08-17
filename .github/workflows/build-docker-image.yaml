@@ -60,8 +60,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      - name: setup gitconfig
+      - name: setup gitconfig for rust-utils
         run: |
+          echo "this is only required because rust-utils is installed via ssh"
           git config user.name "${{ secrets.ci_username }}"
           git config user.email "${{ secrets.ci_user_email }}"
           git config --global url."https://${{ secrets.ci_access_token }}@github.com/".insteadOf ssh://git@github.com
