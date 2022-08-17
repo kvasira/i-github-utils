@@ -16,6 +16,7 @@ inputs:
     
   org:
     required: true
+    default: kvasira
     type: string
     description: "the name of the private git org"
     
