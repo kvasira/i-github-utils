@@ -57,5 +57,5 @@ runs:
       
       shell: bash
     - name: Debug pipeline failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
