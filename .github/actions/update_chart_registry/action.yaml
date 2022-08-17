@@ -1,0 +1,24 @@
+name: update chart registry
+description: commit charts to chart registry main repo. Assumes that the files are there. Should be used in conjuction with create_helm
+
+inputs:
+  repo_name:
+    required: true
+    description: "Name of the repo that the helm chart is for"
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        cd ../coordinator
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "<>"
+        git pull origin main
+        git status
+        helm repo index charts/
+        git add charts
+        git commit -m "[SKIP CI] Update charts registry adding dependencies for ${{ inputs.repo_name }}:${{ inputs.image_tag }}"
+        git push origin main
