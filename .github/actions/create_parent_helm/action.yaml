@@ -1,5 +1,5 @@
-name: create a single helm file
-description: expected to be used in conjunction with the action to checkout and add to chart repo
+name: create a parent helm file
+description: updates dependencies as well as itself
 
 inputs:
   image_tag:
