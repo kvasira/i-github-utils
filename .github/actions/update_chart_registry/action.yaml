@@ -13,7 +13,7 @@ runs:
   using: "composite"
   steps:
     - run: |
-        cd ../coordinator
+        cd ./coordinator
         git config user.name "$GITHUB_ACTOR"
         git config user.email "<>"
         git pull origin main
