@@ -1,0 +1,13 @@
+name: Update next version
+description: "Update the next version of release"
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        git push --tags
+        yarn version --patch --no-git-tag-version
+        next_version=$(cat < package.json | jq -r .version)
+        git add package.json
+        git commit -m '[SKIP CI] next version: '$next_version''
+        git push
+      shell: bash
