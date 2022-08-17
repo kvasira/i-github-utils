@@ -42,7 +42,7 @@ runs:
         docker build --secret id=gitconfig,src=$HOME/.gitconfig --target frontend -t ${image_base}-fe:${{ inputs.image_tag }} .
         docker push ${image_base}-fe:${{ inputs.image_tag }}
 
-        docker build --secret id=gitconfig,src=$HOME/.gitconfig -t ${image_base}-fe-migrator:${{ inputs.image_tag }} frontend/example_migrator
+        docker build --secret id=gitconfig,src=$HOME/.gitconfig -t ${image_base}-fe-migrator:${{ inputs.image_tag }} frontend/migrator
         docker push ${image_base}-fe-migrator:${{ inputs.image_tag }}
 
       shell: bash
