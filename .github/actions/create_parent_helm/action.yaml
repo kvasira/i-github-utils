@@ -50,6 +50,7 @@ runs:
         helm package chart
         # just add the 2 files so it doesn't check in the charts folder created by dependency up
         git stash
+        git config pull.rebase true
         git pull origin main
         git status
         git stash pop
