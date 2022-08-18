@@ -37,6 +37,9 @@ runs:
         helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
         
         
+        git config pull.rebase true
+        git pull origin ${{ github.ref }}
+        
         cd ${{ inputs.helm_path }}
         rm -f chart/Chart.lock
         yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
@@ -49,11 +52,8 @@ runs:
         helm dependency up chart
         helm package chart
         # just add the 2 files so it doesn't check in the charts folder created by dependency up
-        git stash
-        git config pull.rebase true
-        git pull origin ${{ github.ref }}
+        
         git status
-        git stash pop
         
         git add chart/Chart.yaml
         git add chart/values.yaml
