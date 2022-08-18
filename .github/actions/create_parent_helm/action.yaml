@@ -49,9 +49,10 @@ runs:
         helm dependency up chart
         helm package chart
         # just add the 2 files so it doesn't check in the charts folder created by dependency up
-        
+        git stash
         git pull origin main
         git status
+        git stash pop
         
         git add chart/Chart.yaml
         git add chart/values.yaml
