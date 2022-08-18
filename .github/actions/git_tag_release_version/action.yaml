@@ -14,4 +14,5 @@ runs:
     - id: git_tag_release_version
       run: |
         git tag "${{ inputs.release_version }}"
+        git push --tags
       shell: bash
