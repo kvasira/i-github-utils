@@ -38,7 +38,6 @@ runs:
         
         
         cd ${{ inputs.helm_path }}
-        helm dependency up chart
         rm -f chart/Chart.lock
         yq w -i chart/Chart.yaml version ${{ inputs.image_tag }}
         yq w -i chart/Chart.yaml appVersion ${{ inputs.image_tag }}
