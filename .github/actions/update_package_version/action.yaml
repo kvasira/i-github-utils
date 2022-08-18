@@ -4,6 +4,8 @@ runs:
   using: "composite"
   steps:
     - run: |
+        git pull
+        git status
         git push --tags
         yarn version --patch --no-git-tag-version
         next_version=$(cat < package.json | jq -r .version)
