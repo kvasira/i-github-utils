@@ -45,8 +45,13 @@ runs:
         yq w -i chart/values.yaml image.tag ${{ inputs.image_tag }}
         yq w -i chart/Chart.yaml dependencies[0].version ${{ inputs.image_tag }}
         yq w -i chart/Chart.yaml dependencies[1].version ${{ inputs.image_tag }}
+        
+        helm dependency up chart
         helm package chart
-        git add chart
+        # just add the 2 files so it doesn't check in the charts folder created by dependency up
+        git add chart/Chart.yaml
+        git add chart/values.yaml
+        
         
         # move tgz to coordinator to be committed later
         
