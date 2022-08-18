@@ -54,6 +54,8 @@ runs:
         CHARTNAME="$(yq r chart/Chart.yaml name)"
         cp ${CHARTNAME}*.tgz ${{inputs.coordinator_path}}/charts
         
+        git commit -m "[SKIP CI] Create Helm charts for ${{ github.event.repository.name }} version ${{ inputs.image_tag }}"
+        
         # move back to the starting place
         cd -
       
