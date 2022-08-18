@@ -55,11 +55,13 @@ runs:
         cp ${CHARTNAME}*.tgz ${{inputs.coordinator_path}}/charts
         
         git commit -m "[SKIP CI] Create Helm charts for ${{ github.event.repository.name }} version ${{ inputs.image_tag }}"
+        git push origin ${{ github.ref }}
         
         # move back to the starting place
         cd -
       
       shell: bash
+    
     - name: Debug pipeline failure
       if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
