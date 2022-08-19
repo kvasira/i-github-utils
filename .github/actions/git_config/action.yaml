@@ -3,6 +3,9 @@ description: initialise git config so you can do stuff
 
 
 inputs:
+  git_base:
+    required: false
+    default: .
   ci_username:
     required: true
     description: "CI username"
@@ -18,8 +21,9 @@ runs:
   steps:
     - name: setup gitconfig
       run: |
+        cd ${{ inputs.git_base }}
         git config user.name "${{ inputs.ci_username }}"
         git config user.email "${{ inputs.ci_user_email }}"
         git config --global url."https://${{ inputs.ci_access_token }}@github.com/".insteadOf ssh://git@github.com
-
+        cd -
       shell: bash
