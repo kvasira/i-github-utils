@@ -9,8 +9,10 @@ concurrency: build_coordinator
 on:
   workflow_call:
     outputs:
-      package_version: ${{ jobs.create_tag.outputs.package_version }}
-      image_tag: ${{ jobs.create_tag.outputs.image_tag }}
+      package_version: 
+        value: ${{ jobs.create_tag.outputs.package_version }}
+      image_tag: 
+        value: ${{ jobs.create_tag.outputs.image_tag }}
     inputs:
       org:
         required: true
@@ -128,7 +130,6 @@ jobs:
 
       - name: create draft release
         run: gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
-       # gh release edit v1.0 --draft=false
         env:
           GITHUB_TOKEN: ${{ inputs.ci_access_token }}
 
