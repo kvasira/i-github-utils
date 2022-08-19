@@ -30,55 +30,58 @@ inputs:
     description: "CI access token"
     
 runs:
-  uses: nick-fields/retry@v2
-  with:
-    timeout_seconds: 15
-    max_attempts: 3
-    shell: bash
-    command: |
-        sudo snap install yq --channel=v4/stable
-        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+  using: "composite"
+  steps:
+    - name: try to create parent chart
+      uses: nick-fields/retry@v2
+      with:
+        timeout_seconds: 15
+        max_attempts: 3
+        shell: bash
+        command: |
+            sudo snap install yq --channel=v4/stable
+            helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
 
-        # ensure helm charts are indexed so package chart works
-        cd coordinator
-        helm repo index charts/
-        cd -
+            # ensure helm charts are indexed so package chart works
+            cd coordinator
+            helm repo index charts/
+            cd -
 
-        cd ${{ inputs.helm_path }}
-        rm -f chart/Chart.lock
-        yq  -i '.version = "${{ inputs.image_tag }}"' chart/Chart.yaml
-        yq  -i '.appVersion = "${{ inputs.image_tag }}"' chart/Chart.yaml
-        yq  -i '.imageTag = "${{ inputs.image_tag }}"' chart/values.yaml
-        yq  -i '.image.tag = "${{ inputs.image_tag }}"' chart/values.yaml
-        yq  -i '.dependencies[0].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
-        yq  -i '.dependencies[1].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
-        CHARTNAME="$(yq '.name' chart/Chart.yaml)"
+            cd ${{ inputs.helm_path }}
+            rm -f chart/Chart.lock
+            yq  -i '.version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+            yq  -i '.appVersion = "${{ inputs.image_tag }}"' chart/Chart.yaml
+            yq  -i '.imageTag = "${{ inputs.image_tag }}"' chart/values.yaml
+            yq  -i '.image.tag = "${{ inputs.image_tag }}"' chart/values.yaml
+            yq  -i '.dependencies[0].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+            yq  -i '.dependencies[1].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+            CHARTNAME="$(yq '.name' chart/Chart.yaml)"
 
-        helm dependency up chart
-        helm package chart
+            helm dependency up chart
+            helm package chart
 
-        # just add the 2 files so it doesn't check in the charts folder created by dependency up
+            # just add the 2 files so it doesn't check in the charts folder created by dependency up
 
-        git add chart/Chart.yaml
-        git add chart/values.yaml
-        git commit -m "[SKIP CI] Update helm dependency versions for ${{ github.event.repository.name }} ${CHARTNAME}:${{ inputs.image_tag }}"
+            git add chart/Chart.yaml
+            git add chart/values.yaml
+            git commit -m "[SKIP CI] Update helm dependency versions for ${{ github.event.repository.name }} ${CHARTNAME}:${{ inputs.image_tag }}"
 
-        # create and move tgz to coordinator to be committed later
-        mv ${CHARTNAME}*.tgz ${{ github.workspace }}/coordinator/charts
+            # create and move tgz to coordinator to be committed later
+            mv ${CHARTNAME}*.tgz ${{ github.workspace }}/coordinator/charts
 
-        # move back to the starting place
-        cd -
+            # move back to the starting place
+            cd -
 
-        # update chart index in coordinator
-        cd coordinator
-        git pull
-        git status
-        helm repo index charts/
-        git add charts
-        git commit -m "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
-        git push origin main
+            # update chart index in coordinator
+            cd coordinator
+            git pull
+            git status
+            helm repo index charts/
+            git add charts
+            git commit -m "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
+            git push origin main
 
-        # move back to the starting place
-        cd -
-      
+            # move back to the starting place
+            cd -
+
     
