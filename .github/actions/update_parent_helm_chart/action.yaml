@@ -1,0 +1,82 @@
+name: update a parent helm file
+description: updates dependencies as well as itself
+
+inputs:
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+
+  helm_path:
+    required: true
+    description: "folder to find charts to build from,  usually this is '.'"
+
+  coordinator_path:
+    required: true
+    description: "path to coordinator checkout"
+    
+  org:
+    required: true
+    default: kvasira
+    type: string
+    description: "the name of the private git org"
+    
+  coordinator:
+    required: true
+    type: string
+    description: "the name of the repo that has charts"
+  
+  ci_access_token:
+    required: true
+    description: "CI access token"
+    
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        sudo snap install yq --channel=v4/stable
+        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+
+        # ensure helm charts are indexed so package chart works
+        cd coordinator
+        helm repo index charts/
+        cd -
+
+        cd ${{ inputs.helm_path }}
+        rm -f chart/Chart.lock
+        yq  -i '.version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        yq  -i '.appVersion = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        yq  -i '.imageTag = "${{ inputs.image_tag }}"' chart/values.yaml
+        yq  -i '.image.tag = "${{ inputs.image_tag }}"' chart/values.yaml
+        yq  -i '.dependencies[0].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        yq  -i '.dependencies[1].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        CHARTNAME="$(yq '.name' chart/Chart.yaml)"
+
+        helm dependency up chart
+        helm package chart
+
+        # just add the 2 files so it doesn't check in the charts folder created by dependency up
+
+        git add chart/Chart.yaml
+        git add chart/values.yaml
+        git commit -m "[SKIP CI] Update helm dependency versions for ${{ github.event.repository.name }} ${CHARTNAME}:${{ inputs.image_tag }}"
+
+        # create and move tgz to coordinator to be committed later
+        mv ${CHARTNAME}*.tgz ${{ github.workspace }}/coordinator/charts
+
+        # move back to the starting place
+        cd -
+
+        # update chart index in coordinator
+        cd coordinator
+        git pull
+        git status
+        helm repo index charts/
+        git add charts
+        git commit "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
+        git push origin main
+
+        # move back to the starting place
+        cd -
+      
+      shell: bash
+    

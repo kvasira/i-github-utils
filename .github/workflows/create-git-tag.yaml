@@ -1,0 +1,128 @@
+name: create git tag
+# concurrency is specified as we can see race conditions with some of the
+# actions that require updates to helm charts and package.json if multiple repos
+# are trying to build at the same time
+concurrency: build_coordinator
+
+
+# this workflow is expected to the used via 'uses' tag and not run manually
+on:
+  workflow_call:
+    inputs:
+      org:
+        required: true
+        type: string
+        description: "the name of the private org to ensure we don't run on forks"
+      coordinator:
+        required: true
+        type: string
+        description: "the name of the repo that has helper actions in it"
+    secrets:
+      ci_access_token:
+        required: true
+        description: "org specific token"
+      ci_username:
+        required: true
+        description: "CI username"
+      ci_user_email:
+        required: true
+        description: "CI user email"
+      ci_access_token:
+        required: true
+        description: "CI access token"
+
+
+jobs:
+  create_tag:
+    # this should stop this running on forks: github.repository_owner == 'orgname'
+    # also only run this if it is a merge to main
+
+    if:  ${{ github.repository_owner == inputs.org && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout_code
+        name: get code
+        uses: actions/checkout@v3
+        with:
+          path: main_code
+
+      - id: checkout_k0
+        name: get k0 to commit charts to
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.org }}/${{ coordinator }}
+          ref: main
+          token: "${{ secrets.ci_access_token }}"
+          path: coordinator
+
+      - name: setup gitconfig for update package version
+        uses: kvasira/i-github-utils/.github/actions/git_config@main
+        with:
+          ci_username: ${{ github.actor }}
+          ci_user_email: ${{ secrets.ci_user_email }}
+          ci_access_token: ${{ secrets.ci_access_token }}
+
+      - id: get_package_version
+        name: get package version
+        shell: bash
+        run: |
+          cd main_code
+          git pull
+          git status
+          yarn version --patch --no-git-tag-version
+          package_version=$(cat < package.json | jq -r .version)
+          echo "::set-output name=package_version::$package_version"
+          git add package.json
+          git commit -m '[SKIP CI] latest version: '$package_version'
+          cd -
+
+      - id: get_image_tag
+        name: create tag based on branch and package version
+        uses: kvasira/i-github-utils/.github/actions/create_image_tag@main
+        with:
+          package_version: ${{ steps.get_package_version.outputs.package_version }}
+
+      - name: update fe helm
+        uses: kvasira/i-github-utils/.github/actions/update_helm_chart@main
+        with:
+          org: kvasira
+          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
+          coordinator: kvasir_0000
+          helm_path: main_code/frontend
+          image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
+        
+      - name: update be helm
+        uses: kvasira/i-github-utils/.github/actions/update_helm_chart@main
+        with:
+          org: kvasira
+          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
+          coordinator: kvasir_0000
+          helm_path: main_code/backend
+          image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
+
+      - name: update main helm
+        uses: kvasira/i-github-utils/.github/actions/update_parent_helm_chart@main
+        with:
+          org: kvasira
+          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
+          coordinator: kvasir_0000
+          helm_path: main_code
+          image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
+
+      - name: commit all the things
+        shell: bash
+        run: |
+          cd main_code
+          git push
+          cd -
+        
+      - name: create the tag  but don't release
+        shell: bash
+        run: |
+          cd main_code
+          git tag "${{ inputs.release_version }}"
+          git push origin "${{ inputs.release_version }}"
+
+      - name: Debug pipeline failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

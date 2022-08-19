@@ -1,0 +1,71 @@
+name: update a single helm file
+description: adds the commit to coordinator
+
+inputs:
+  image_tag:
+    required: true
+    description: "Image tag to use for this chart"
+
+  helm_path:
+    required: true
+    description: "folder to find charts to build from,  usually this is '.'"
+    
+  org:
+    required: true
+    default: kvasira
+    type: string
+    description: "the name of the private git org"
+    
+  coordinator:
+    required: true
+    type: string
+    description: "the name of the repo that has charts"
+  
+  ci_access_token:
+    required: true
+    description: "CI access token"
+    
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        sudo snap install yq --channel=v4/stable
+        helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
+      
+        cd ${{ inputs.helm_path }}
+        helm dependency up chart
+        rm -f chart/Chart.lock
+        yq  -i '.version = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        yq  -i '.appVersion = "${{ inputs.image_tag }}"' chart/Chart.yaml
+        yq  -i '.imageTag = "${{ inputs.image_tag }}"' chart/values.yaml
+        yq  -i '.image.tag = "${{ inputs.image_tag }}"' chart/values.yaml
+        CHARTNAME="$(yq '.name' chart/Chart.yaml)"
+
+        # confirm no issues
+        helm package chart
+
+        # commit the changes to version to the repo
+        git add chart
+        git commit -m "[SKIP CI] Update helm adding versions for ${CHARTNAME}:${{ inputs.image_tag }}"
+
+        # create and move tgz to coordinator to be committed later
+        mv ${CHARTNAME}*.tgz ${{ github.workspace }}/coordinator/charts
+        
+        # move back to the starting place
+        cd -
+
+        cd coordinator
+        git pull
+        git status
+        helm repo index charts/
+        git add charts
+        git commit "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
+        git push origin main
+
+        # move back to the starting place
+        cd -
+
+    - name: Debug pipeline failure
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
