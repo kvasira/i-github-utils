@@ -63,6 +63,15 @@ jobs:
       - name: setup gitconfig for update package version
         uses: kvasira/i-github-utils/.github/actions/git_config@main
         with:
+          git_base: main_code
+          ci_username: ${{ github.actor }}
+          ci_user_email: ${{ secrets.ci_user_email }}
+          ci_access_token: ${{ secrets.ci_access_token }}
+
+      - name: setup gitconfig for update package version
+        uses: kvasira/i-github-utils/.github/actions/git_config@main
+        with:
+          git_base: coordinator
           ci_username: ${{ github.actor }}
           ci_user_email: ${{ secrets.ci_user_email }}
           ci_access_token: ${{ secrets.ci_access_token }}
