@@ -60,7 +60,7 @@ runs:
         git status
         helm repo index charts/
         git add charts
-        git commit "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
+        git commit -m "[SKIP CI] adding helm chart to chart repo ${CHARTNAME}:${{ inputs.image_tag }}"
         git push origin main
 
         # move back to the starting place
