@@ -37,6 +37,7 @@ runs:
       with:
         max_attempts: 3
         retry_wait_seconds: 5
+        timeout_minutes: 2
         shell: bash
         command: |
             sudo snap install yq --channel=v4/stable
