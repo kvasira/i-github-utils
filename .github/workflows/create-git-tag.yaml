@@ -55,7 +55,7 @@ jobs:
         name: get k0 to commit charts to
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.org }}/${{ coordinator }}
+          repository: ${{ inputs.org }}/${{ inputs.coordinator }}
           ref: main
           token: "${{ secrets.ci_access_token }}"
           path: coordinator
