@@ -36,6 +36,7 @@ runs:
       uses: nick-fields/retry@v2
       with:
         max_attempts: 3
+        retry_wait_seconds: 5
         shell: bash
         command: |
             sudo snap install yq --channel=v4/stable
@@ -82,5 +83,7 @@ runs:
 
             # move back to the starting place
             cd -
-
+            
+            # exit as successful
+            exit 0
     
