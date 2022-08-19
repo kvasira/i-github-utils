@@ -21,9 +21,6 @@ on:
         type: string
         description: "the name of the repo that has helper actions in it"
     secrets:
-      ci_access_token:
-        required: true
-        description: "org specific token"
       ci_username:
         required: true
         description: "CI username"
@@ -128,6 +125,13 @@ jobs:
           cd main_code
           git tag "${{ inputs.release_version }}"
           git push origin "${{ inputs.release_version }}"
+
+      - name: create draft release
+        run: gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
+       # gh release edit v1.0 --draft=false
+        env:
+          GITHUB_TOKEN: ${{ inputs.ci_access_token }}
+
 
       - name: Debug pipeline failure
         if: ${{ failure() }}
