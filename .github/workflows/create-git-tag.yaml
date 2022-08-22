@@ -138,7 +138,9 @@ jobs:
           git push origin "${{ steps.get_image_tag.outputs.specific_version }}"
 
       - name: create draft release
-        run: gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
+        run: |
+          cd main_code
+          gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.ci_access_token }}
 
