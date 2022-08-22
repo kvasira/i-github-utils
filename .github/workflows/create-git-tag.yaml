@@ -140,7 +140,7 @@ jobs:
       - name: create draft release
         run: gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
         env:
-          GITHUB_TOKEN: ${{ inputs.ci_access_token }}
+          GITHUB_TOKEN: ${{ secrets.ci_access_token }}
 
 
       - name: Debug pipeline failure
