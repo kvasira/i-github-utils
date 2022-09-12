@@ -37,6 +37,7 @@ runs:
       with:
         max_attempts: 5
         shell: bash
+        timeout_minutes: 1
         command: |
             sudo snap install yq --channel=v4/stable
             helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
