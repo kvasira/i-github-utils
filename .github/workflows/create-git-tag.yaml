@@ -144,7 +144,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ci_access_token }}
 
-
-      - name: Debug pipeline failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
