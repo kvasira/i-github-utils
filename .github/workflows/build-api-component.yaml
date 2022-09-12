@@ -21,9 +21,6 @@ on:
         type: string
         description: "Docker container registry org name"
     secrets:
-      token:
-        required: true
-        description: "org CI token"
       ci_username:
         required: true
         description: "CI username"
@@ -60,9 +57,6 @@ on:
         type: string
         description: "Docker container registry org name"
     secrets:
-      token:
-        required: true
-        description: "org CI token"
       ci_username:
         required: true
         description: "CI username"
@@ -104,7 +98,7 @@ jobs:
         with:
           repository: ${{ inputs.org }}/${{ inputs.coordinator }}
           ref: main
-          token: "${{ secrets.token }}"
+          token: "${{ secrets.ci_access_token }}"
           path: coordinator
 
       - name: Prepare environment
@@ -139,7 +133,7 @@ jobs:
           docker_registry: "${{ secrets.docker_registry }}"
           docker_username: "${{ secrets.docker_username }}"
           docker_password: "${{ secrets.docker_password }}"
-      
+
       - name: Create the Helm charts
         uses: kvasira/i-github-utils/.github/actions/create_api_helm_charts@main
         with:

@@ -19,9 +19,6 @@ on:
         type: string
         description: "the name of the repo that has helper actions in it"
     secrets:
-      token:
-        required: true
-        description: "org specific token"
       ci_username:
         required: true
         description: "CI username"
@@ -65,7 +62,7 @@ jobs:
         with:
           repository: ${{ inputs.org }}/${{ inputs.coordinator }}
           ref: main
-          token: "${{ secrets.token }}"
+          token: "${{ secrets.ci_access_token }}"
           path: coordinator
 
       - name: Prepare environment
