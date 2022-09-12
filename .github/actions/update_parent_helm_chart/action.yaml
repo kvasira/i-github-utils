@@ -58,7 +58,10 @@ runs:
             yq  -i '.dependencies[1].version = "${{ inputs.image_tag }}"' chart/Chart.yaml
             CHARTNAME="$(yq '.name' chart/Chart.yaml)"
 
-            helm dependency up chart
+            # fail quickly if the charts aren't available yet
+            if ! helm dependency up chart; then 
+              exit 1 
+            fi
             helm package chart
 
             # just add the 2 files so it doesn't check in the charts folder created by dependency up
