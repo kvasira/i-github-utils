@@ -42,8 +42,9 @@ runs:
             sudo snap install yq --channel=v4/stable
             helm repo add ikva https://${{inputs.ci_access_token}}@raw.githubusercontent.com/${{inputs.org}}/${{inputs.coordinator}}/main/charts
 
-            # ensure helm charts are indexed so package chart works
+            # ensure helm charts are up to date and indexed so package chart works
             cd coordinator
+            git pull
             helm repo index charts/
             cd -
 
