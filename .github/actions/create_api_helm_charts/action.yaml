@@ -24,7 +24,7 @@ inputs:
     description: "CI user email"
   ci_access_token:
     required: true
-    description: "CI access token"
+    description: "CI access token needed for changes to coordinator"
 
 runs:
   using: "composite"

@@ -29,9 +29,12 @@ on:
       ci_user_email:
         required: true
         description: "CI user email"
+      ci_github_token:
+        required: true
+        description: "CI github token"
       ci_access_token:
         required: true
-        description: "CI access token"
+        description: "CI access token for coordinator"
 
 
 jobs:
@@ -99,27 +102,27 @@ jobs:
       - name: update fe helm
         uses: kvasira/i-github-utils/.github/actions/update_helm_chart@main
         with:
-          org: kvasira
-          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
-          coordinator: kvasir_0000
+          org: "${{ inputs.org }}"
+          coordinator: "${{ inputs.coordinator }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
           helm_path: main_code/frontend
           image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
         
       - name: update be helm
         uses: kvasira/i-github-utils/.github/actions/update_helm_chart@main
         with:
-          org: kvasira
-          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
-          coordinator: kvasir_0000
+          org: "${{ inputs.org }}"
+          coordinator: "${{ inputs.coordinator }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
           helm_path: main_code/backend
           image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
 
       - name: update main helm
         uses: kvasira/i-github-utils/.github/actions/update_parent_helm_chart@main
         with:
-          org: kvasira
+          org: ${{ inputs.org }}
           ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
-          coordinator: kvasir_0000
+          coordinator: ${{ inputs.coordinator }}
           helm_path: main_code
           image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
 
@@ -142,5 +145,5 @@ jobs:
           cd main_code
           gh release create ${{ steps.get_image_tag.outputs.specific_version }} --draft --notes "Release ${{ steps.get_image_tag.outputs.specific_version }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.ci_access_token }}
+          GITHUB_TOKEN: ${{ secrets.ci_github_token }}
 
