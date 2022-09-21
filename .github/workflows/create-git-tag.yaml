@@ -120,9 +120,9 @@ jobs:
       - name: update main helm
         uses: kvasira/i-github-utils/.github/actions/update_parent_helm_chart@main
         with:
-          org: ${{ inputs.org }}
-          ci_access_token: "${{ secrets.CI_ACCESS_TOKEN }}"
-          coordinator: ${{ inputs.coordinator }}
+          org: "${{ inputs.org }}"
+          coordinator: "${{ inputs.coordinator }}"
+          ci_access_token: "${{ secrets.ci_access_token }}"
           helm_path: main_code
           image_tag: ${{ steps.get_image_tag.outputs.specific_version }}
 
