@@ -27,14 +27,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install pdm
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        
       - name: Test
         run: |
           make sync
           make test
   
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        
       - name: Upload HTML test report
         uses: actions/upload-artifact@v3
         with:
